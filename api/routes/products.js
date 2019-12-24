@@ -10,14 +10,14 @@ router.get('/',(req,res,next)=>{
    .then(docs =>{
       const response = {
           count:docs.length,
-          Products: docs.map(doc =>{
+          Products:docs.map(doc =>{
               return{
                   name:doc.name,
                   price:doc.price,
                   _id:doc._id,
                   request:{
                       type:"GET",
-                      url:"http://localhost/3000/products"+ doc_.id
+                      url:"http://localhost:3000/products/"+ doc._id
                   }
               }
           })
