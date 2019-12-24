@@ -43,8 +43,17 @@ router.post('/',(req,res,next)=>{
     .then(result =>{
         console.log(result);
         res.status(201).json({
-        message:"Handling POST request to /products",
-        createdProduct:result
+        message:"Product was created successfully",
+        createdProduct:{
+            name:result.name,
+            price:result.price,
+            _id:result._id,
+            request:{
+                type:"GET",
+                url:"http://localhost:3000/products/"+result._id
+            }
+    
+        }
         });
     })
     .catch(err => {
@@ -59,11 +68,19 @@ router.post('/',(req,res,next)=>{
 router.get('/:productId',(req,res,next)=>{
    const id = req.params.productId;
  Product.findById(id)
+ .select('name price _id')
  .exec()
  .then(doc => {
      console.log("from the database",doc);
      if(doc){
-         res.status(200).json(doc)
+         res.status(200).json({
+            product :doc,
+            request:{
+                type:"GET",
+                description:"get all products",
+                url:"http://localhost:3000/products/"
+            } 
+        })
      }else{
          res.status(404).json({message:"Invalid entry provided"})
      }
@@ -86,8 +103,13 @@ router.patch('/:productId',(req,res,next)=>{
     Product.update({_id:id},{$set: updateOps})
     .exec()
     .then(result =>{
-        console.log(result)
-        res.status(200).json(result)
+        res.status(200).json({
+            message:'Product Updated',
+            request:{
+                type:"GET",
+                url:"http://localhost:3000/products/"+id
+            }
+        })
     })
     .catch(err=>{
         console.log(err);
@@ -102,7 +124,17 @@ router.delete('/:productId',(req,res,next)=>{
     Product.remove({_id:id})
     .exec()
     .then(result => {
-        res.status(200).json(result)
+        res.status(200).json({
+            message:"Product was deleted",
+            request:{
+                type:"POST",
+                url:"http://localhost:3000/products/",
+                data:{
+                    body:{name:"String", price:"Number"}
+                }
+
+            }
+        })
     })
     .catch(err =>{
         console.log(err);
