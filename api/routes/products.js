@@ -10,7 +10,7 @@ router.get('/',(req,res,next)=>{
    .then(docs =>{
       const response = {
           count:docs.length,
-          Products:docs
+          Products: docs
       }
        res.status(200).json(response)
    })
