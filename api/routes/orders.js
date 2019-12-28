@@ -7,6 +7,7 @@ const Product = require('./models/product')
 router.get('/',(req,res,next)=>{
 Order.find()
 .select('product quantity _id')
+.populate('product','name')
 .exec()
 .then(docs =>{
     res.status(200).json({
@@ -42,10 +43,10 @@ router.post('/',(req,res,next)=>{
         }
         const order = new Order({
             _id:new mongoose.Types.ObjectId(),
-            product:req.body.productId,
-            quantity:req.body.quantity,     
+            quantity:req.body.quantity,
+            product:req.body.productId    
         });
-        return order.save()
+        return order.save();
     })
         .then(result=>{
             console.log(result);
@@ -63,7 +64,6 @@ router.post('/',(req,res,next)=>{
                 }
             })
         })
- 
     .catch(err=>{
         console.log(err);
         res.status(500).json({
@@ -74,19 +74,42 @@ router.post('/',(req,res,next)=>{
 });
 
 router.get('/:orderId',(req,res,next)=>{
+    Order.findById(req.params.orderId)
+    .populate('product')
+    .exec()
+    .then(order=>{
         res.status(200).json({
-            message:"order Details",
-            orderId:req.params.orderId
+            order:order,
+            request:{
+                type:"GET",
+                url:"http://localhost:3000/orders"
+            }
         })
-    
-
+    })
+    .catch(err=>{
+        res.status(500).json({
+            error:err
+        })
+    })
 });
 
 router.delete('/:orderId',(req,res,next)=>{
-    res.status(200).json({
-        message:"order was deleted",
-        orderId:req.params.orderId
-    });
+  Order.remove({_id:req.params.orderId})
+  .exec()
+  .then(result=>{
+      res.status(200).json({
+        message:"order deleted",
+        request:{
+            type:"POST",
+            url:"http://localhost:3000/order",
+            body:{productId:"ID",quantity:"Number"}
+        }
+      })
+  })
+  .catch(err=>{
+      res.status(500).json({
+          error:err
+      })
+  })
 });
-
 module.exports = router;
